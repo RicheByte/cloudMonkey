@@ -1,0 +1,33 @@
+{
+  "apis": {
+    "shodan": {
+      "api_key": "YOUR_SHODAN_API_KEY",
+      "enabled": false
+    },
+    "censys": {
+      "api_id": "YOUR_CENSYS_API_ID",
+      "api_secret": "YOUR_CENSYS_API_SECRET",
+      "enabled": false
+    },
+    "securitytrails": {
+      "api_key": "YOUR_SECURITYTRAILS_API_KEY",
+      "enabled": false
+    },
+    "virustotal": {
+      "api_key": "YOUR_VIRUSTOTAL_API_KEY",
+      "enabled": false
+    },
+    "hunter": {
+      "api_key": "YOUR_HUNTER_API_KEY",
+      "enabled": false
+    },
+    "urlscan": {
+      "api_key": "YOUR_URLSCAN_API_KEY",
+      "enabled": false
+    },
+    "alienvault": {
+      "api_key": "YOUR_ALIENVAULT_API_KEY",
+      "enabled": false
+    }
+  }
+}
