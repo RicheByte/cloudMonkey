@@ -1,4 +1,4 @@
-# 🐵 cloudMonkey
+#  cloudMonkey
 
 **Advanced Cloud Security Scanner & Misconfiguration Detection Toolkit**
 
@@ -12,7 +12,7 @@ cloudMonkey is a high-performance Python toolkit for cloud reconnaissance and se
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ```bash
 # Clone and setup
@@ -31,7 +31,7 @@ python cloud-pro.py example.com --mode normal --format html -o report.html
 
 ---
 
-## 📦 Three Scanning Engines
+##  Three Scanning Engines
 
 cloudMonkey offers **three purpose-built scanners** to match your needs:
 
@@ -60,7 +60,7 @@ python cloud-mini.py example.com
 
 ---
 
-### 🔸 **cloud.py** — Balanced Security Scanning
+###  **cloud.py** — Balanced Security Scanning
 **Use Case:** CTFs, security labs, training, demos  
 **Speed:** ⚡⚡ (10-20 seconds)  
 **Depth:** Moderate coverage
@@ -85,7 +85,7 @@ python cloud.py example.com
 
 ---
 
-### 🔶 **cloud-pro.py** — Ultimate Professional Scanner
+###  **cloud-pro.py** — Ultimate Professional Scanner
 **Use Case:** Production audits, comprehensive assessments  
 **Speed:** ⚡ (8-15 seconds with optimizations)  
 **Depth:** Maximum coverage
@@ -106,11 +106,11 @@ python cloud-pro.py example.com --mode aggressive --verify --format html -o repo
 - ✅ **Performance optimized** with connection pooling & caching
 
 **Performance Optimizations (No API Keys Required):**
-- 🚀 **3-5x faster** than previous versions
-- 💾 **50% less memory** usage via session reuse
-- 🔗 **Connection pooling** with DNS/SSL caching
-- ⚡ **Parallel scanning** for files, buckets, and ports
-- 📊 See [PERFORMANCE_IMPROVEMENTS.md](PERFORMANCE_IMPROVEMENTS.md) for benchmarks
+-  **3-5x faster** than previous versions
+-  **50% less memory** usage via session reuse
+-  **Connection pooling** with DNS/SSL caching
+-  **Parallel scanning** for files, buckets, and ports
+-  See [PERFORMANCE_IMPROVEMENTS.md](/doc/PERFORMANCE_IMPROVEMENTS.md) for benchmarks
 
 **Ideal For:**
 - Professional security audits
@@ -120,7 +120,7 @@ python cloud-pro.py example.com --mode aggressive --verify --format html -o repo
 
 ---
 
-## 🎯 Feature Comparison
+##  Feature Comparison
 
 | Feature | Mini | Normal | Pro |
 |---------|------|--------|-----|
@@ -186,7 +186,7 @@ python cloud-pro.py --help
 
 ---
 
-## 📖 Usage Examples
+##  Usage Examples
 
 ### Basic Scans
 
@@ -275,7 +275,7 @@ python cloud-pro.py example.com \
 
 ---
 
-## ⚙️ Configuration
+##  Configuration
 
 ### Environment Variables
 
@@ -339,7 +339,7 @@ Edit the file with your keys and set `"enabled": true` for APIs you want to use.
 
 ---
 
-## 📊 Output & Reporting
+##  Output & Reporting
 
 ### Risk Scoring (cloud-pro.py)
 
@@ -361,7 +361,7 @@ cloudMonkey Pro uses a **normalized 0-100 risk score**:
 ║    CLOUD SECURITY SCANNER - REPORT        ║
 ╚═══════════════════════════════════════════╝
 
-📋 SCAN SUMMARY
+ SCAN SUMMARY
 Target: example.com
 Risk Score: 75/100 (HIGH)
 Findings: 23
@@ -386,7 +386,7 @@ Findings: 23
 
 ---
 
-## 🔬 Understanding Findings
+##  Understanding Findings
 
 ### Finding Structure
 
@@ -432,7 +432,7 @@ Each security finding includes:
 
 ---
 
-## 🚀 Performance Tips
+##  Performance Tips
 
 ### Optimize Scan Speed
 
@@ -458,7 +458,7 @@ cloudMonkey Pro automatically caches:
 
 ---
 
-## 🧪 Development
+##  Development
 
 ### Setting Up Dev Environment
 
@@ -514,7 +514,7 @@ mypy cloud-pro.py
 
 ---
 
-## 📈 Roadmap
+##  Roadmap
 
 ### Planned Features
 
@@ -552,7 +552,7 @@ mypy cloud-pro.py
 
 ---
 
-## ⚠️ Legal & Responsible Use
+##  Legal & Responsible Use
 
 ### Important Notice
 
@@ -586,7 +586,7 @@ This tool is provided for **educational and authorized security assessment purpo
 
 ---
 
-## 📚 Resources
+##  Resources
 
 ### Security Learning
 
@@ -610,7 +610,7 @@ This tool is provided for **educational and authorized security assessment purpo
 
 ---
 
-## 🤝 Acknowledgments
+##  Acknowledgments
 
 Special thanks to:
 - The cloud security research community
@@ -621,7 +621,7 @@ Special thanks to:
 
 ---
 
-## 📝 License
+##  License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -651,7 +651,7 @@ SOFTWARE.
 
 ---
 
-## 📞 Contact & Support
+##  Contact & Support
 
 - **Author:** RicheByte
 - **Repository:** [github.com/RicheByte/cloudMonkey](https://github.com/RicheByte/cloudMonkey)
@@ -672,81 +672,6 @@ SOFTWARE.
 ---
 
 **Made with ❤️ by RicheByte | Happy Hunting! 🐵**
-
-## Getting started
-
-Prerequisites:
-- Python 3.10+ recommended
-- A virtual environment (venv) is recommended
-
-Install:
-
-```bash
-git clone https://github.com/RicheByte/cloudMonkey.git
-cd cloudMonkey
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -U pip
-pip install -r requirements.txt
-```
-
-If the project uses a different dependency manager (e.g., Poetry, PDM, Hatch), adapt the steps accordingly.
-
-
-## Model profiles
-
-- mini
-  - Depth: low
-  - Concurrency: conservative
-  - Timeouts: short
-  - Use cases: CI sanity checks, local dev loops, unit tests
-
-- normal
-  - Depth: medium
-  - Concurrency: balanced
-  - Timeouts: standard
-  - Use cases: CTFs, workshops, demonstrations, exploratory runs
-
-- pro
-  - Depth: high
-  - Concurrency: tuned for throughput
-  - Timeouts: generous
-  - Use cases: comprehensive audits, methodical research, large targets
-
-## Configuration
-
-Typical configuration approaches:
-- Command-line flags to override model defaults
-- Environment variables for credentials and provider context
-- Optional YAML/TOML file to persist preferences
-
-Examples of environment variables often used in cloud tooling (only set what you need, and only for assets you own):
-- AWS: AWS_PROFILE, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN, AWS_REGION
-- GCP: GOOGLE_APPLICATION_CREDENTIALS
-- Azure: AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID
-
-Refer to the project’s code or CLI help for the exact configuration supported.
-
-## Output
-
-Outputs typically include:
-- Summary of discovered assets and potential misconfigurations
-- Artifact files (e.g., JSON) for downstream analysis
-- Optional verbose logs per phase
-
-Use --output to write results to disk if supported.
-
-## Development
-
-Set up a dev environment:
-```bash
-git clone https://github.com/RicheByte/cloudMonkey.git
-cd cloudMonkey
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
 
 
 Suggested commit and PR guidelines:
