@@ -1,0 +1,33 @@
+# cloudMonkey Requirements
+# Python 3.10+ recommended
+
+# Core HTTP/Async Libraries
+aiohttp>=3.9.0
+asyncio>=3.4.3
+urllib3>=2.0.0
+
+# DNS Resolution
+dnspython>=2.4.0
+
+# SSL/TLS Support
+pyOpenSSL>=23.0.0
+cryptography>=41.0.0
+
+# Command Line Interface
+argparse>=1.4.0
+
+# Data Handling
+python-dateutil>=2.8.2
+
+# Optional: API Integration Support (for cloud-pro.py)
+ Uncomment if you plan to use external API integrations:
+requests>=2.31.0
+shodan>=1.30.0
+ensys>=2.2.0
+
+# Development Dependencies (Optional)
+ pytest>=7.4.0
+ pytest-asyncio>=0.21.0
+ black>=23.0.0
+ flake8>=6.0.0
+ mypy>=1.5.0
