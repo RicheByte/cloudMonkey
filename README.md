@@ -91,7 +91,7 @@ python cloud.py example.com
 **Depth:** Maximum coverage
 
 ```bash
-python cloud-pro.py example.com --mode aggressive --verify --format html -o report.html
+python cloud-pro.py example.com --mode aggressive  --format html -o report.html
 ```
 
 **Features:**

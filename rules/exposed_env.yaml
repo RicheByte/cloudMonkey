@@ -1,0 +1,67 @@
+---
+id: EXPOSED_ENV_FILE
+name: Exposed Environment Configuration
+description: .env file containing sensitive credentials is publicly accessible
+severity: critical
+confidence: confirmed
+category: sensitive_files
+tags:
+  - credentials
+  - configuration
+  - information_disclosure
+
+patterns:
+  - type: url
+    paths:
+      - /.env
+      - /.env.local
+      - /.env.production
+      - /.env.development
+    description: Environment file accessible
+
+  - type: response_body
+    regex: '(API_KEY|SECRET|PASSWORD|TOKEN|DB_|DATABASE)'
+    description: Environment variable format detected
+
+response_codes:
+  - 200
+
+remediation: |
+  1. IMMEDIATELY remove .env file from public access
+  2. Add to .htaccess (Apache):
+     <Files .env>
+       Order allow,deny
+       Deny from all
+     </Files>
+  
+  3. Add to nginx.conf:
+     location ~ /\.env {
+       deny all;
+     }
+  
+  4. Rotate ALL exposed credentials immediately
+  5. Add .env to .gitignore
+  6. Review access logs for unauthorized access
+  7. Use secret management (AWS Secrets Manager, HashiCorp Vault)
+
+references:
+  - https://owasp.org/www-community/vulnerabilities/Information_exposure_through_query_strings_in_url
+  - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+
+cvss:
+  vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N"
+  score: 10.0
+
+owasp_top10:
+  - A01:2021 - Broken Access Control
+  - A05:2021 - Security Misconfiguration
+
+mitre_attack:
+  - T1552.001 - Credentials in Files
+  - T1213 - Data from Information Repositories
+
+compliance:
+  iso27001: ["A.9.4.1", "A.9.4.5"]
+  nist_800_53: ["AC-3", "IA-5"]
+  soc2: ["CC6.1", "CC6.6"]
+  pci_dss: ["8.2", "8.3"]

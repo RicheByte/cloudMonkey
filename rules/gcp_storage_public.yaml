@@ -1,0 +1,55 @@
+---
+id: GCP_STORAGE_PUBLIC
+name: Google Cloud Storage Public Bucket
+description: GCP Storage bucket is publicly accessible
+severity: critical
+confidence: high
+category: cloud_storage
+tags:
+  - gcp
+  - google_cloud
+  - storage
+  - misconfiguration
+
+patterns:
+  - type: response_body
+    regex: '<ListBucketResult'
+    description: GCS bucket listing visible
+  
+  - type: response_body
+    contains: 'storage.googleapis.com'
+    description: GCS XML namespace
+
+  - type: url
+    contains: 'storage.googleapis.com'
+    description: GCS URL pattern
+
+response_codes:
+  - 200
+
+remediation: |
+  1. Log into Google Cloud Console
+  2. Navigate to Cloud Storage > Browser
+  3. Select the bucket
+  4. Go to Permissions tab
+  5. Remove allUsers and allAuthenticatedUsers permissions
+  6. Set appropriate IAM policies
+
+references:
+  - https://cloud.google.com/storage/docs/access-control
+  - https://cloud.google.com/storage/docs/access-control/making-data-public
+
+cvss:
+  vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+  score: 7.5
+
+owasp_top10:
+  - A01:2021 - Broken Access Control
+
+mitre_attack:
+  - T1530 - Data from Cloud Storage Object
+
+compliance:
+  iso27001: ["A.9.1.2", "A.13.1.3"]
+  nist_800_53: ["AC-3", "AC-6"]
+  soc2: ["CC6.1", "CC6.6"]

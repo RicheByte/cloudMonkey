@@ -1,0 +1,55 @@
+---
+id: AZURE_BLOB_PUBLIC
+name: Azure Blob Storage Public Container
+description: Azure Blob Storage container is publicly accessible
+severity: critical
+confidence: high
+category: cloud_storage
+tags:
+  - azure
+  - blob_storage
+  - misconfiguration
+
+patterns:
+  - type: response_body
+    regex: '<EnumerationResults'
+    description: Azure blob listing visible
+  
+  - type: response_body
+    contains: 'blob.core.windows.net'
+    description: Azure Blob XML namespace
+
+  - type: url
+    contains: 'blob.core.windows.net'
+    description: Azure Blob URL pattern
+
+response_codes:
+  - 200
+
+remediation: |
+  1. Log into Azure Portal
+  2. Navigate to Storage Accounts
+  3. Select the storage account
+  4. Go to Containers
+  5. Select the container
+  6. Change Public access level to "Private (no anonymous access)"
+  7. Review Shared Access Signatures (SAS)
+
+references:
+  - https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-prevent
+  - https://docs.microsoft.com/en-us/azure/storage/blobs/storage-manage-access-to-resources
+
+cvss:
+  vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+  score: 7.5
+
+owasp_top10:
+  - A01:2021 - Broken Access Control
+
+mitre_attack:
+  - T1530 - Data from Cloud Storage Object
+
+compliance:
+  iso27001: ["A.9.1.2", "A.13.1.3"]
+  nist_800_53: ["AC-3", "AC-6"]
+  soc2: ["CC6.1", "CC6.6"]

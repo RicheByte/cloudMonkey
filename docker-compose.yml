@@ -1,0 +1,54 @@
+# Docker Compose for Cloud Security Scanner
+version: '3.8'
+
+services:
+  scanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cloudmonkey:latest
+    container_name: cloud-scanner
+    volumes:
+      # Persist scan database
+      - ./data:/data
+      # Persist reports
+      - ./reports:/reports
+      # Custom rules (optional)
+      - ./rules:/app/rules:ro
+      # API config (optional)
+      - ./api_config.json:/app/api_config.json:ro
+    environment:
+      - SCAN_DB_PATH=/data/scan_history.db
+      # Add API keys if needed
+      # - SHODAN_API_KEY=your_key_here
+      # - VIRUSTOTAL_API_KEY=your_key_here
+    command: >
+      --help
+    restart: unless-stopped
+    networks:
+      - scanner-network
+
+  # Optional: API Server (uncomment when implemented)
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.api
+  #   image: cloudmonkey-api:latest
+  #   container_name: cloud-scanner-api
+  #   ports:
+  #     - "8080:8080"
+  #   volumes:
+  #     - ./data:/data
+  #   environment:
+  #     - SCAN_DB_PATH=/data/scan_history.db
+  #   restart: unless-stopped
+  #   networks:
+  #     - scanner-network
+
+networks:
+  scanner-network:
+    driver: bridge
+
+volumes:
+  scanner-data:
+    driver: local

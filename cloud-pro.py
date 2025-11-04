@@ -53,8 +53,29 @@ import base64
 import os
 from pathlib import Path
 import warnings
+import sqlite3
+import yaml
 from enum import Enum
 from abc import ABC, abstractmethod
+
+# Import new modules
+try:
+    from db_manager import DatabaseManager, ScanDelta
+    from rules_engine import RulesEngine, SecurityRule
+    DB_AVAILABLE = True
+except ImportError:
+    DB_AVAILABLE = False
+    print("⚠️  Database module not available - historical tracking disabled")
+
+try:
+    from rich.console import Console
+    from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
+    from rich.live import Live
+    from rich.table import Table
+    from rich.panel import Panel
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
 
 warnings.filterwarnings('ignore')
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -250,6 +271,11 @@ class Finding:
     verified: bool = False
     false_positive_score: float = 0.0
     risk_score: int = 0
+    # New fields for enhanced reporting
+    cvss: Optional[Dict] = None
+    owasp_mapping: Optional[List[str]] = None
+    mitre_attack: Optional[List[str]] = None
+    compliance: Optional[Dict] = None
     
     def to_dict(self) -> Dict:
         return asdict(self)
@@ -1044,7 +1070,7 @@ class PassiveIntelligence:
             yield session
     
     async def enrich_domain(self, domain: str, results: Dict):
-        """Main enrichment function"""
+        """Main enrichment function with parallel API queries"""
         enabled_apis = self.api_config.get_enabled_apis()
         
         if not enabled_apis:
@@ -1057,19 +1083,29 @@ class PassiveIntelligence:
         results['passive_intelligence'] = {}
         
         async with self.create_session() as session:
+            # Create semaphore for rate limiting across all APIs
+            semaphore = asyncio.Semaphore(5)  # Max 5 concurrent API calls
+            
+            async def rate_limited_query(api_func, *args):
+                """Wrapper to apply semaphore rate limiting"""
+                async with semaphore:
+                    return await api_func(*args)
+            
             tasks = []
             
             if self.api_config.is_enabled('shodan'):
-                tasks.append(self.query_shodan(domain, session, results))
+                tasks.append(rate_limited_query(self.query_shodan, domain, session, results))
             
             if self.api_config.is_enabled('virustotal'):
-                tasks.append(self.query_virustotal(domain, session, results))
+                tasks.append(rate_limited_query(self.query_virustotal, domain, session, results))
             
             if self.api_config.is_enabled('securitytrails'):
-                tasks.append(self.query_securitytrails(domain, session, results))
+                tasks.append(rate_limited_query(self.query_securitytrails, domain, session, results))
             
+            # Execute all API queries in parallel with rate limiting
             if tasks:
                 await asyncio.gather(*tasks, return_exceptions=True)
+                logger.info(f"✅ Passive intelligence gathering completed ({len(tasks)} sources queried)")
     
     async def query_shodan(self, domain: str, session: aiohttp.ClientSession, results: Dict):
         """Query Shodan API"""
@@ -1139,7 +1175,9 @@ class CloudMisconfigurationScanner:
                  max_workers: int = 50, rate_limit: int = 100,
                  api_config: Optional[APIConfig] = None,
                  scan_mode: ScanMode = ScanMode.NORMAL,
-                 verify_findings: bool = True):
+                 verify_findings: bool = True,
+                 enable_db: bool = True,
+                 enable_rules: bool = True):
         self.verbose = verbose
         self.timeout = timeout
         self.max_workers = max_workers
@@ -1150,6 +1188,27 @@ class CloudMisconfigurationScanner:
         self.api_config = api_config or APIConfig()
         self.passive_intel = PassiveIntelligence(self.api_config, self.cache, timeout)
         self.stats = defaultdict(int)
+        
+        # Initialize database manager
+        self.db = None
+        if enable_db and DB_AVAILABLE:
+            try:
+                self.db = DatabaseManager()
+                self.log("✅ Database persistence enabled", 'info')
+            except Exception as e:
+                self.log(f"⚠️  Database initialization failed: {e}", 'warning')
+        
+        # Initialize rules engine
+        self.rules_engine = None
+        if enable_rules:
+            try:
+                self.rules_engine = RulesEngine()
+                self.log(f"✅ Rules engine loaded: {len(self.rules_engine.rules)} rules", 'info')
+            except Exception as e:
+                self.log(f"⚠️  Rules engine initialization failed: {e}", 'warning')
+        
+        # Initialize rich console for better output
+        self.console = Console() if RICH_AVAILABLE else None
         
         self.security_headers = {
             'strict-transport-security': 'HSTS',
@@ -1198,6 +1257,33 @@ class CloudMisconfigurationScanner:
                 8080: 'HTTP-Alt', 8443: 'HTTPS-Alt', 3389: 'RDP', 445: 'SMB',
                 1433: 'MSSQL', 11211: 'Memcached', 9000: 'PHP-FPM', 8000: 'HTTP-Dev'
             }
+        
+        # Multi-cloud storage endpoints
+        self.cloud_storage_endpoints = {
+            'aws_s3': [
+                'https://{bucket}.s3.amazonaws.com',
+                'https://s3.amazonaws.com/{bucket}',
+                'https://{bucket}.s3.{region}.amazonaws.com'
+            ],
+            'gcp_storage': [
+                'https://storage.googleapis.com/{bucket}',
+                'https://{bucket}.storage.googleapis.com'
+            ],
+            'azure_blob': [
+                'https://{account}.blob.core.windows.net/{container}',
+                'https://{account}.blob.core.windows.net/{container}?restype=container&comp=list'
+            ],
+            'digitalocean_spaces': [
+                'https://{bucket}.{region}.digitaloceanspaces.com',
+                'https://{bucket}.nyc3.digitaloceanspaces.com'
+            ],
+            'oracle_cloud': [
+                'https://objectstorage.{region}.oraclecloud.com/n/{namespace}/b/{bucket}/o'
+            ],
+            'alibaba_oss': [
+                'https://{bucket}.oss-{region}.aliyuncs.com'
+            ]
+        }
     
     def log(self, message: str, level: str = 'info'):
         """Enhanced logging"""
@@ -1264,12 +1350,16 @@ class CloudMisconfigurationScanner:
             
             if self.scan_mode in [ScanMode.NORMAL, ScanMode.AGGRESSIVE]:
                 scan_tasks.extend([
-                    self.check_s3_buckets_optimized(domain, results, session),
+                    self.check_multicloud_storage_optimized(domain, results, session),
                     self.check_subdomain_takeover(domain, results),
                     self.scan_common_ports(domain, results)
                 ])
             
             await asyncio.gather(*scan_tasks, return_exceptions=True)
+        
+        # Enrich findings with rules engine
+        if self.rules_engine:
+            await self.enrich_findings_with_rules(results)
         
         if self.verify_findings:
             await self.verify_all_findings(results)
@@ -1283,12 +1373,50 @@ class CloudMisconfigurationScanner:
             **dict(self.passive_intel.stats)
         }
         
+        # Save to database
+        if self.db:
+            try:
+                scan_id = self.db.save_scan(results)
+                results['scan_id'] = scan_id
+                self.log(f"💾 Scan saved to database (ID: {scan_id})", 'info')
+            except Exception as e:
+                self.log(f"⚠️  Failed to save scan to database: {e}", 'warning')
+        
         severity = RiskScorer.get_severity_from_score(results['risk_score'])
         self.log(f"✅ Scan completed in {results['scan_duration']}s - "
                 f"{severity.icon} Risk Score: {results['risk_score']}/100 ({severity.name}) - "
                 f"Findings: {len(results['findings'])}", 'info')
         
         return results
+    
+    async def enrich_findings_with_rules(self, results: Dict):
+        """Enrich findings using rules engine for compliance mapping"""
+        if not self.rules_engine:
+            return
+        
+        enriched_count = 0
+        for finding in results['findings']:
+            # Try to match finding type to rule ID
+            finding_type = finding.get('type', '')
+            
+            # Map finding types to rule IDs
+            type_to_rule = {
+                'S3_BUCKET_PUBLIC': 'AWS_S3_PUBLIC_BUCKET',
+                'EXPOSED_SERVICE_PORT': 'EXPOSED_SERVICE_PORT',
+                'SSL_CERTIFICATE_EXPIRED': 'SSL_CERTIFICATE_EXPIRED',
+                'EXPOSED_ADMIN_PANEL': 'EXPOSED_ADMIN_PANEL',
+                'SENSITIVE_FILE_EXPOSED': 'EXPOSED_GIT_CONFIG',
+                'MISSING_HSTS': 'MISSING_SECURITY_HEADERS',
+                'MISSING_CSP': 'MISSING_SECURITY_HEADERS',
+            }
+            
+            rule_id = type_to_rule.get(finding_type)
+            if rule_id:
+                finding = self.rules_engine.enrich_finding(finding, rule_id)
+                enriched_count += 1
+        
+        if enriched_count > 0:
+            self.log(f"✅ Enriched {enriched_count} findings with compliance metadata", 'info')
     
     async def verify_all_findings(self, results: Dict):
         """Verify all findings to filter false positives"""
@@ -1765,6 +1893,124 @@ class CloudMisconfigurationScanner:
         except Exception as e:
             self.log(f"S3 bucket check error: {str(e)}", 'debug')
     
+    async def check_multicloud_storage_optimized(self, domain: str, results: Dict, session: aiohttp.ClientSession):
+        """
+        Comprehensive multi-cloud storage bucket check
+        Supports: AWS S3, GCP Storage, Azure Blob, DigitalOcean Spaces, Oracle Cloud, Alibaba OSS
+        """
+        try:
+            self.log("☁️  Checking for exposed cloud storage buckets (multi-cloud)...", 'debug')
+            
+            company_name = domain.split('.')[0]
+            bucket_name = domain.replace('.', '-')
+            
+            async def check_cloud_storage(cloud_type: str, url_template: str, bucket: str):
+                """Check a single cloud storage URL"""
+                try:
+                    # Format URL with appropriate placeholders
+                    if cloud_type == 'aws_s3':
+                        url = url_template.format(bucket=bucket, region='us-east-1')
+                    elif cloud_type == 'gcp_storage':
+                        url = url_template.format(bucket=bucket)
+                    elif cloud_type == 'azure_blob':
+                        url = url_template.format(account=bucket, container='public')
+                    elif cloud_type == 'digitalocean_spaces':
+                        url = url_template.format(bucket=bucket, region='nyc3')
+                    elif cloud_type == 'oracle_cloud':
+                        url = url_template.format(region='us-phoenix-1', namespace=bucket, bucket=bucket)
+                    elif cloud_type == 'alibaba_oss':
+                        url = url_template.format(bucket=bucket, region='cn-hangzhou')
+                    else:
+                        return
+                    
+                    async with session.get(url, timeout=aiohttp.ClientTimeout(total=5), ssl=False) as response:
+                        if response.status == 200:
+                            content = await response.text()
+                            
+                            # Cloud-specific detection patterns
+                            patterns = {
+                                'aws_s3': 'ListBucketResult',
+                                'gcp_storage': ('ListBucketResult', 'storage.googleapis.com'),
+                                'azure_blob': 'EnumerationResults',
+                                'digitalocean_spaces': 'ListBucketResult',
+                                'oracle_cloud': 'objects',
+                                'alibaba_oss': 'ListBucketResult'
+                            }
+                            
+                            pattern = patterns.get(cloud_type)
+                            is_match = False
+                            
+                            if isinstance(pattern, tuple):
+                                is_match = any(p in content for p in pattern)
+                            else:
+                                is_match = pattern in content
+                            
+                            if is_match:
+                                cloud_names = {
+                                    'aws_s3': 'AWS S3',
+                                    'gcp_storage': 'Google Cloud Storage',
+                                    'azure_blob': 'Azure Blob Storage',
+                                    'digitalocean_spaces': 'DigitalOcean Spaces',
+                                    'oracle_cloud': 'Oracle Cloud Storage',
+                                    'alibaba_oss': 'Alibaba Cloud OSS'
+                                }
+                                
+                                rule_ids = {
+                                    'aws_s3': 'AWS_S3_PUBLIC_BUCKET',
+                                    'gcp_storage': 'GCP_STORAGE_PUBLIC',
+                                    'azure_blob': 'AZURE_BLOB_PUBLIC',
+                                    'digitalocean_spaces': 'DIGITALOCEAN_SPACES_PUBLIC'
+                                }
+                                
+                                finding = Finding(
+                                    type=f'{cloud_type.upper()}_PUBLIC',
+                                    severity='CRITICAL',
+                                    location=url,
+                                    description=f'Public {cloud_names.get(cloud_type, cloud_type)} bucket found',
+                                    evidence=f'Bucket listing accessible (HTTP {response.status})',
+                                    confidence=Confidence.HIGH.value,
+                                    source='scanner',
+                                    remediation=f'Restrict {cloud_names.get(cloud_type)} bucket permissions immediately'
+                                )
+                                
+                                # Enrich with rule metadata if available
+                                if self.rules_engine and cloud_type in rule_ids:
+                                    rule_id = rule_ids[cloud_type]
+                                    finding_dict = self.rules_engine.enrich_finding(finding.to_dict(), rule_id)
+                                    results['findings'].append(finding_dict)
+                                else:
+                                    results['findings'].append(finding.to_dict())
+                                
+                                results['cloud_services'].append({
+                                    'type': cloud_names.get(cloud_type, cloud_type),
+                                    'location': url,
+                                    'status': 'public'
+                                })
+                                self.stats[f'{cloud_type}_public'] += 1
+                                
+                except asyncio.TimeoutError:
+                    pass
+                except Exception as e:
+                    self.log(f"Error checking {cloud_type}: {str(e)}", 'debug')
+            
+            # Generate bucket variations
+            bucket_patterns = self.s3_patterns if hasattr(self, 's3_patterns') else [
+                '{domain}', '{domain}-prod', '{domain}-backup', '{company}'
+            ]
+            
+            tasks = []
+            for cloud_type, url_templates in self.cloud_storage_endpoints.items():
+                for pattern in bucket_patterns[:5]:  # Limit to top 5 patterns per cloud
+                    test_bucket = pattern.format(domain=bucket_name, company=company_name)
+                    for url_template in url_templates:
+                        tasks.append(check_cloud_storage(cloud_type, url_template, test_bucket))
+            
+            # Execute all checks in parallel
+            await asyncio.gather(*tasks, return_exceptions=True)
+            
+        except Exception as e:
+            self.log(f"Multi-cloud storage check error: {str(e)}", 'debug')
+    
     async def check_subdomain_takeover(self, domain: str, results: Dict):
         """Check for subdomain takeover vulnerabilities"""
         try:
@@ -1903,30 +2149,32 @@ def print_banner():
     """Print enhanced scanner banner"""
     banner = """
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                                                                                 ║
+║                                                                               ║
 ║   ███████╗███████╗ ██████╗██╗   ██╗██████╗ ██╗████████╗██╗   ██╗              ║
 ║   ██╔════╝██╔════╝██╔════╝██║   ██║██╔══██╗██║╚══██╔══╝╚██╗ ██╔╝              ║
 ║   ███████╗█████╗  ██║     ██║   ██║██████╔╝██║   ██║    ╚████╔╝               ║
 ║   ╚════██║██╔══╝  ██║     ██║   ██║██╔══██╗██║   ██║     ╚██╔╝                ║
 ║   ███████║███████╗╚██████╗╚██████╔╝██║  ██║██║   ██║      ██║                 ║
 ║   ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝   ╚═╝      ╚═╝                 ║
-║                                                                                 ║
-║              🚀 CLOUD MISCONFIGURATION SCANNER 🚀                              ║
-║                    ULTIMATE PROFESSIONAL EDITION                                ║
-║                         Version 6.0-ULTIMATE                                    ║
-║                                                                                 ║
+║                                                                               ║
+║              🚀 CLOUD MISCONFIGURATION SCANNER 🚀                            ║
+║                      ENTERPRISE EDITION v7.0                                  ║
+║                         Next-Generation Security                              ║
+║                                                                               ║
 ║  ┌─────────────────────────────────────────────────────────────────────────┐  ║
-║  │  ⚡ Advanced Security Reconnaissance with AI-Powered Verification       │  ║
-║  │  🔍 Intelligent False Positive Filtering                                │  ║
-║  │  🌐 Multi-Source Passive Intelligence Integration                       │  ║
-║  │  📊 Normalized Risk Scoring (0-100 Scale)                               │  ║
-║  │  🎯 Multi-Mode Scanning (Safe/Normal/Aggressive/Stealth)                │  ║
-║  │  📝 Professional Multi-Format Reporting                                 │  ║
+║  │  ⚡ Advanced Multi-Cloud Security Analysis                              │  ║
+║  │  �️  Persistent Storage & Historical Tracking                           │  ║
+║  │  📋 YAML-Based Rules Engine (Community-Driven)                          │  ║
+║  │  🌐 6 Cloud Providers: AWS, GCP, Azure, DO, Oracle, Alibaba            │  ║
+║  │  📊 Compliance: ISO27001, SOC2, NIST 800-53, PCI-DSS                   │  ║
+║  │  🔍 CVSS v3.1, OWASP Top 10, MITRE ATT&CK Integration                  │  ║
+║  │  🐳 Docker-Ready with CI/CD Support                                     │  ║
+║  │  � Scan Comparison & Trend Analysis                                    │  ║
 ║  └─────────────────────────────────────────────────────────────────────────┘  ║
 ║                                                                                 ║
 ║  Author: RicheByte                                                              ║
 ║  License: MIT                                                                   ║
-║  Date: 2025-10-23                                                              ║
+║  Date: 2025-11-04                                                              ║
 ║                                                                                 ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
     """
@@ -1976,7 +2224,15 @@ Report Formats:
                        help='Generate API configuration template')
     parser.add_argument('--no-verify', dest='verify', action='store_false',
                        help='Disable finding verification (faster but less accurate)')
-    parser.add_argument('--version', action='version', version='%(prog)s 6.0-ULTIMATE')
+    parser.add_argument('--no-db', dest='enable_db', action='store_false',
+                       help='Disable database persistence')
+    parser.add_argument('--no-rules', dest='enable_rules', action='store_false',
+                       help='Disable rules engine')
+    parser.add_argument('--compare', help='Compare with previous scan (provide domain name)')
+    parser.add_argument('--history', help='Show scan history for domain')
+    parser.add_argument('--compliance', choices=['iso27001', 'soc2', 'nist_800_53', 'pci_dss'],
+                       help='Generate compliance report for framework')
+    parser.add_argument('--version', action='version', version='%(prog)s 7.0-ENTERPRISE')
     
     return parser.parse_args()
 
@@ -1992,10 +2248,46 @@ async def main():
         api_config.save_template()
         return
     
+    # Handle history query
+    if args.history:
+        if DB_AVAILABLE:
+            with DatabaseManager() as db:
+                history = db.get_scan_history(args.history, limit=10)
+                print(f"\n📊 Scan History for {args.history}")
+                print("=" * 80)
+                for scan in history:
+                    print(f"  {scan['timestamp']} - Risk: {scan['risk_score']}/100 - "
+                          f"Findings: {scan['total_findings']} - Duration: {scan['scan_duration']}s")
+                print("")
+        else:
+            print("❌ Database module not available")
+        return
+    
+    # Handle comparison
+    if args.compare:
+        if DB_AVAILABLE:
+            with DatabaseManager() as db:
+                delta = db.compare_scans(args.compare)
+                print(f"\n📊 Scan Comparison for {args.compare}")
+                print("=" * 80)
+                print(f"Previous Scan: {delta.timestamp_old}")
+                print(f"Latest Scan:   {delta.timestamp_new}")
+                print(f"\nRisk Score Change: {delta.risk_score_change:+d}")
+                print(f"New Findings: {len(delta.new_findings)}")
+                print(f"Resolved Findings: {len(delta.resolved_findings)}")
+                print("\nSeverity Changes:")
+                for sev, change in delta.severity_changes.items():
+                    if change != 0:
+                        print(f"  {sev}: {change:+d}")
+                print("")
+        else:
+            print("❌ Database module not available")
+        return
+    
     if not args.domain:
         print("❌ Error: Domain argument required")
-        print("   Usage: python3 cloud_scanner.py <domain>")
-        print("   Try: python3 cloud_scanner.py --help")
+        print("   Usage: python cloud-pro.py <domain>")
+        print("   Try: python cloud-pro.py --help")
         sys.exit(1)
     
     try:
@@ -2009,10 +2301,29 @@ async def main():
             max_workers=args.workers,
             api_config=api_config,
             scan_mode=scan_mode,
-            verify_findings=args.verify
+            verify_findings=args.verify,
+            enable_db=args.enable_db,
+            enable_rules=args.enable_rules
         )
         
         results = await scanner.scan_domain_async(args.domain)
+        
+        # Generate compliance report if requested
+        if args.compliance and scanner.rules_engine:
+            compliance_report = scanner.rules_engine.generate_compliance_report(
+                results['findings'], args.compliance
+            )
+            print(f"\n📋 {args.compliance.upper()} Compliance Report")
+            print("=" * 80)
+            print(f"Compliance Score: {compliance_report['compliance_score']:.1f}/100")
+            print(f"Controls Affected: {compliance_report['controls_affected_count']}")
+            print(f"Total Findings: {compliance_report['total_findings']}")
+            if compliance_report['controls_affected']:
+                print(f"\nAffected Controls:")
+                for control in compliance_report['controls_affected']:
+                    finding_count = len(compliance_report['findings_by_control'].get(control, []))
+                    print(f"  - {control}: {finding_count} finding(s)")
+            print("")
         
         report_generators = {
             'text': ReportGenerator.generate_text_report,

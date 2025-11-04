@@ -1,0 +1,60 @@
+---
+id: EXPOSED_GIT_CONFIG
+name: Exposed Git Configuration
+description: Git configuration files are publicly accessible
+severity: high
+confidence: confirmed
+category: sensitive_files
+tags:
+  - git
+  - information_disclosure
+  - source_code
+
+patterns:
+  - type: url
+    paths:
+      - /.git/config
+      - /.git/HEAD
+    description: Git configuration accessible
+
+  - type: response_body
+    contains: "[core]"
+    description: Git config file format detected
+
+response_codes:
+  - 200
+
+remediation: |
+  1. Immediately block access to .git directory
+  2. Add to .htaccess (Apache):
+     RedirectMatch 404 /\.git
+  
+  3. Add to nginx.conf:
+     location ~ /\.git {
+       deny all;
+     }
+  
+  4. Review what was exposed
+  5. Rotate any exposed credentials
+  6. Consider if source code exposure poses additional risks
+
+references:
+  - https://owasp.org/www-community/attacks/Forced_browsing
+  - https://github.com/internetwache/GitTools
+
+cvss:
+  vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+  score: 7.5
+
+owasp_top10:
+  - A01:2021 - Broken Access Control
+  - A05:2021 - Security Misconfiguration
+
+mitre_attack:
+  - T1213 - Data from Information Repositories
+  - T1594 - Search Victim-Owned Websites
+
+compliance:
+  iso27001: ["A.9.1.2", "A.13.1.3"]
+  nist_800_53: ["AC-3", "SC-7"]
+  soc2: ["CC6.1", "CC6.6"]

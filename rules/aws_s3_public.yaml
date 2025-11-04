@@ -1,0 +1,52 @@
+---
+id: AWS_S3_PUBLIC_BUCKET
+name: AWS S3 Public Bucket Detected
+description: S3 bucket is publicly accessible without authentication
+severity: critical
+confidence: high
+category: cloud_storage
+tags:
+  - aws
+  - s3
+  - misconfiguration
+  - data_exposure
+
+patterns:
+  - type: response_body
+    regex: '<ListBucketResult'
+    description: S3 bucket listing is publicly visible
+  
+  - type: response_body
+    contains: 'xmlns="http://s3.amazonaws.com/doc/2006-03-01/"'
+    description: Valid S3 bucket XML response
+
+response_codes:
+  - 200
+
+remediation: |
+  1. Log into AWS Console
+  2. Navigate to S3 bucket settings
+  3. Go to Permissions > Block Public Access
+  4. Enable "Block all public access"
+  5. Review bucket policies and ACLs
+  6. Remove any public-read or public-read-write permissions
+
+references:
+  - https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html
+  - https://owasp.org/www-project-cloud-security/
+
+cvss:
+  vector: "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+  score: 7.5
+  
+owasp_top10:
+  - A01:2021 - Broken Access Control
+  
+mitre_attack:
+  - T1530 - Data from Cloud Storage Object
+
+compliance:
+  iso27001: ["A.9.1.2", "A.13.1.3"]
+  nist_800_53: ["AC-3", "AC-6"]
+  soc2: ["CC6.1", "CC6.6"]
+  pci_dss: ["7.1", "7.2"]

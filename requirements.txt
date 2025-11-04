@@ -7,7 +7,7 @@ asyncio>=3.4.3
 urllib3>=2.0.0
 
 # DNS Resolution
-dnspython>=2.4.0
+dnspython
 
 # SSL/TLS Support
 pyOpenSSL>=23.0.0
@@ -19,15 +19,27 @@ argparse>=1.4.0
 # Data Handling
 python-dateutil>=2.8.2
 
+# NEW: Rules Engine & Configuration
+pyyaml>=6.0.1
+
+# NEW: Rich Terminal Output (Optional but recommended)
+rich>=13.7.0
+
+# NEW: FastAPI for API Server (Optional)
+ fastapi>=0.104.0
+# uvicorn[standard]>=0.24.0
+# websockets>=12.0
+
 # Optional: API Integration Support (for cloud-pro.py)
- Uncomment if you plan to use external API integrations:
-requests>=2.31.0
-shodan>=1.30.0
-ensys>=2.2.0
+# Uncomment if you plan to use external API integrations:
+# requests>=2.31.0
+# shodan>=1.30.0
+# censys>=2.2.0
 
 # Development Dependencies (Optional)
- pytest>=7.4.0
- pytest-asyncio>=0.21.0
- black>=23.0.0
- flake8>=6.0.0
- mypy>=1.5.0
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+# black>=23.0.0
+# flake8>=6.0.0
+# mypy>=1.5.0
+
