@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Scan Report - testphp.vulnweb.com</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header p { font-size: 1.2em; opacity: 0.9; }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            background: #f8f9fa;
+        }
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        .summary-card .value { font-size: 2em; font-weight: bold; color: #333; }
+        .risk-score { text-align: center; padding: 40px; }
+        .risk-score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: white;
+            background: #ffc107;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .findings-section { padding: 40px; }
+        .severity-group { margin-bottom: 40px; }
+        .severity-header {
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .finding-card {
+            background: white;
+            border-left: 4px solid;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .finding-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .finding-title { font-weight: bold; font-size: 1.1em; }
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-verified { background: #28a745; color: white; }
+        .badge-confidence { background: #17a2b8; color: white; }
+        .finding-detail {
+            margin: 10px 0;
+            padding-left: 20px;
+            border-left: 2px solid #e9ecef;
+        }
+        .finding-detail strong { color: #667eea; }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #343a40;
+            color: white;
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Security Scan Report</h1>
+            <p>Comprehensive Security Assessment</p>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card">
+                <h3>🎯 Target Domain</h3>
+                <div class="value">testphp.vulnweb.com</div>
+            </div>
+            <div class="summary-card">
+                <h3>⏰ Scan Time</h3>
+                <div class="value">83.18s</div>
+            </div>
+            <div class="summary-card">
+                <h3>🔍 Total Findings</h3>
+                <div class="value">31</div>
+            </div>
+            <div class="summary-card">
+                <h3>✅ Verified</h3>
+                <div class="value">29</div>
+            </div>
+        </div>
+        
+        <div class="risk-score">
+            <div class="risk-score-circle">63</div>
+            <h2 style="color: #ffc107;">MEDIUM RISK</h2>
+            <p>Overall Security Score</p>
+        </div>
+        
+        <div class="findings-section">
+            <h2 style="margin-bottom: 30px;">🔍 Detailed Findings</h2>
+            <div class="severity-group">
+                <div class="severity-header" style="background: #dc3545;">
+                    <span>CRITICAL Severity</span>
+                    <span>5 finding(s)</span>
+                </div>
+                <div class="finding-card" style="border-left-color: #dc3545;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:22<br>
+                        <strong>📝 Description:</strong> Exposed SSH service on port 22<br>
+                        <strong>🔬 Evidence:</strong> Port 22 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 22 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #dc3545;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:3306<br>
+                        <strong>📝 Description:</strong> Exposed MySQL service on port 3306<br>
+                        <strong>🔬 Evidence:</strong> Port 3306 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 3306 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #dc3545;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:5432<br>
+                        <strong>📝 Description:</strong> Exposed PostgreSQL service on port 5432<br>
+                        <strong>🔬 Evidence:</strong> Port 5432 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 5432 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #dc3545;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:27017<br>
+                        <strong>📝 Description:</strong> Exposed MongoDB service on port 27017<br>
+                        <strong>🔬 Evidence:</strong> Port 27017 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 27017 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #dc3545;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:6379<br>
+                        <strong>📝 Description:</strong> Exposed Redis service on port 6379<br>
+                        <strong>🔬 Evidence:</strong> Port 6379 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 6379 using firewall rules
+                    </div>
+                </div>
+            </div>
+            <div class="severity-group">
+                <div class="severity-header" style="background: #fd7e14;">
+                    <span>HIGH Severity</span>
+                    <span>19 finding(s)</span>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:80<br>
+                        <strong>📝 Description:</strong> Exposed HTTP service on port 80<br>
+                        <strong>🔬 Evidence:</strong> Port 80 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 80 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:443<br>
+                        <strong>📝 Description:</strong> Exposed HTTPS service on port 443<br>
+                        <strong>🔬 Evidence:</strong> Port 443 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 443 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:21<br>
+                        <strong>📝 Description:</strong> Exposed FTP service on port 21<br>
+                        <strong>🔬 Evidence:</strong> Port 21 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 21 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:23<br>
+                        <strong>📝 Description:</strong> Exposed Telnet service on port 23<br>
+                        <strong>🔬 Evidence:</strong> Port 23 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 23 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:25<br>
+                        <strong>📝 Description:</strong> Exposed SMTP service on port 25<br>
+                        <strong>🔬 Evidence:</strong> Port 25 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 25 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:9200<br>
+                        <strong>📝 Description:</strong> Exposed Elasticsearch service on port 9200<br>
+                        <strong>🔬 Evidence:</strong> Port 9200 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 9200 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:5984<br>
+                        <strong>📝 Description:</strong> Exposed CouchDB service on port 5984<br>
+                        <strong>🔬 Evidence:</strong> Port 5984 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 5984 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:8080<br>
+                        <strong>📝 Description:</strong> Exposed HTTP-Alt service on port 8080<br>
+                        <strong>🔬 Evidence:</strong> Port 8080 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 8080 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:8443<br>
+                        <strong>📝 Description:</strong> Exposed HTTPS-Alt service on port 8443<br>
+                        <strong>🔬 Evidence:</strong> Port 8443 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 8443 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:3389<br>
+                        <strong>📝 Description:</strong> Exposed RDP service on port 3389<br>
+                        <strong>🔬 Evidence:</strong> Port 3389 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 3389 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:445<br>
+                        <strong>📝 Description:</strong> Exposed SMB service on port 445<br>
+                        <strong>🔬 Evidence:</strong> Port 445 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 445 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:1433<br>
+                        <strong>📝 Description:</strong> Exposed MSSQL service on port 1433<br>
+                        <strong>🔬 Evidence:</strong> Port 1433 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 1433 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:11211<br>
+                        <strong>📝 Description:</strong> Exposed Memcached service on port 11211<br>
+                        <strong>🔬 Evidence:</strong> Port 11211 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 11211 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:9000<br>
+                        <strong>📝 Description:</strong> Exposed PHP-FPM service on port 9000<br>
+                        <strong>🔬 Evidence:</strong> Port 9000 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 9000 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">EXPOSED_SERVICE_PORT</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> 44.228.249.3:8000<br>
+                        <strong>📝 Description:</strong> Exposed HTTP-Dev service on port 8000<br>
+                        <strong>🔬 Evidence:</strong> Port 8000 is open and accepting connections<br><strong>💡 Remediation:</strong> Restrict access to port 8000 using firewall rules
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_HSTS</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing HSTS security header<br>
+                        <strong>🔬 Evidence:</strong> Header "strict-transport-security" not present in HTTP response<br><strong>💡 Remediation:</strong> Add the following headers to your web server configuration:
+
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+For Apache:
+  Add to .htaccess or httpd.conf
+
+For Nginx:
+  Add to server block in nginx.conf
+
+For Node.js/Express:
+  Use helmet middleware
+
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_CSP</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing CSP security header<br>
+                        <strong>🔬 Evidence:</strong> Header "content-security-policy" not present in HTTP response<br><strong>💡 Remediation:</strong> Add the following headers to your web server configuration:
+
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Content-Security-Policy: default-src 'self'
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+For Apache:
+  Add to .htaccess or httpd.conf
+
+For Nginx:
+  Add to server block in nginx.conf
+
+For Node.js/Express:
+  Use helmet middleware
+
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">SENSITIVE_FILE_EXPOSED</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com/crossdomain.xml<br>
+                        <strong>📝 Description:</strong> Sensitive file accessible: /crossdomain.xml<br>
+                        <strong>🔬 Evidence:</strong> HTTP 200 - Content length: 224 bytes<br><strong>💡 Remediation:</strong> 1. Immediately block access to .git directory
+2. Add to .htaccess (Apache):
+   RedirectMatch 404 /\.git
+
+3. Add to nginx.conf:
+   location ~ /\.git {
+     deny all;
+   }
+
+4. Review what was exposed
+5. Rotate any exposed credentials
+6. Consider if source code exposure poses additional risks
+
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #fd7e14;">
+                    <div class="finding-header">
+                        <span class="finding-title">SENSITIVE_FILE_EXPOSED</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com/clientaccesspolicy.xml<br>
+                        <strong>📝 Description:</strong> Sensitive file accessible: /clientaccesspolicy.xml<br>
+                        <strong>🔬 Evidence:</strong> HTTP 200 - Content length: 307 bytes<br><strong>💡 Remediation:</strong> 1. Immediately block access to .git directory
+2. Add to .htaccess (Apache):
+   RedirectMatch 404 /\.git
+
+3. Add to nginx.conf:
+   location ~ /\.git {
+     deny all;
+   }
+
+4. Review what was exposed
+5. Rotate any exposed credentials
+6. Consider if source code exposure poses additional risks
+
+                    </div>
+                </div>
+            </div>
+            <div class="severity-group">
+                <div class="severity-header" style="background: #ffc107;">
+                    <span>MEDIUM Severity</span>
+                    <span>5 finding(s)</span>
+                </div>
+                <div class="finding-card" style="border-left-color: #ffc107;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_X_FRAME_OPTIONS</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing X-Frame-Options security header<br>
+                        <strong>🔬 Evidence:</strong> Header "x-frame-options" not present in HTTP response<br><strong>💡 Remediation:</strong> Add X-Frame-Options header: Consult OWASP guidelines for secure configuration
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #ffc107;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_X_CONTENT_TYPE_OPTIONS</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing X-Content-Type-Options security header<br>
+                        <strong>🔬 Evidence:</strong> Header "x-content-type-options" not present in HTTP response<br><strong>💡 Remediation:</strong> Add X-Content-Type-Options header: Consult OWASP guidelines for secure configuration
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #ffc107;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_X_XSS_PROTECTION</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing X-XSS-Protection security header<br>
+                        <strong>🔬 Evidence:</strong> Header "x-xss-protection" not present in HTTP response<br><strong>💡 Remediation:</strong> Add X-XSS-Protection header: Consult OWASP guidelines for secure configuration
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #ffc107;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_REFERRER_POLICY</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing Referrer-Policy security header<br>
+                        <strong>🔬 Evidence:</strong> Header "referrer-policy" not present in HTTP response<br><strong>💡 Remediation:</strong> Add Referrer-Policy header: Consult OWASP guidelines for secure configuration
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #ffc107;">
+                    <div class="finding-header">
+                        <span class="finding-title">MISSING_PERMISSIONS_POLICY</span>
+                        <div><span class="badge badge-verified">VERIFIED</span><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Missing Permissions-Policy security header<br>
+                        <strong>🔬 Evidence:</strong> Header "permissions-policy" not present in HTTP response<br><strong>💡 Remediation:</strong> Add Permissions-Policy header: Consult OWASP guidelines for secure configuration
+                    </div>
+                </div>
+            </div>
+            <div class="severity-group">
+                <div class="severity-header" style="background: #28a745;">
+                    <span>LOW Severity</span>
+                    <span>2 finding(s)</span>
+                </div>
+                <div class="finding-card" style="border-left-color: #28a745;">
+                    <div class="finding-header">
+                        <span class="finding-title">SERVER_VERSION_DISCLOSURE</span>
+                        <div><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Server version information disclosed<br>
+                        <strong>🔬 Evidence:</strong> Server: nginx/1.19.0<br><strong>💡 Remediation:</strong> Remove version information from Server header
+                    </div>
+                </div>
+                <div class="finding-card" style="border-left-color: #28a745;">
+                    <div class="finding-header">
+                        <span class="finding-title">TECHNOLOGY_DISCLOSURE</span>
+                        <div><span class="badge badge-confidence">HIGH</span></div>
+                    </div>
+                    <div class="finding-detail">
+                        <strong>📍 Location:</strong> http://testphp.vulnweb.com<br>
+                        <strong>📝 Description:</strong> Technology information disclosed in x-powered-by<br>
+                        <strong>🔬 Evidence:</strong> x-powered-by: PHP/5.6.40-38+ubuntu20.04.1+deb.sury.org+1<br><strong>💡 Remediation:</strong> Remove x-powered-by header
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Generated by Cloud Security Scanner Ultimate Edition v6.0</p>
+            <p>Scan completed at 2025-11-04T21:41:24.101542</p>
+            <p>Author: RicheByte</p>
+        </div>
+    </div>
+</body>
+</html>
