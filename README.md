@@ -64,10 +64,10 @@ python cloud-pro.py example.com --format html --output report.html
 -  Open port scanning (databases, admin panels)
 
 ### Intelligence Features
-- 🌐 Passive intelligence (Shodan, VirusTotal, SecurityTrails)
-- 🔬 Intelligent false positive filtering
-- 📊 Normalized risk scoring (0-100 scale)
-- 🎯 Multi-mode scanning (Safe, Normal, Aggressive, Stealth)
+-  Passive intelligence (Shodan, VirusTotal, SecurityTrails)
+-  Intelligent false positive filtering
+-  Normalized risk scoring (0-100 scale)
+-  Multi-mode scanning (Safe, Normal, Aggressive, Stealth)
 
 ---
 
@@ -188,13 +188,16 @@ compliance:
 ```
 
 ### API Configuration
+
+![Apis](/assets/apis.png)
+
+
 ```bash
 # Generate template
 python cloud-pro.py --generate-config
 
 # Edit api_config_template.json
 
-![Demo Video](/assets/apis.png)
 
 # Add your API keys (optional)
 
@@ -351,4 +354,3 @@ If you find this tool useful, please give it a star  on GitHub!
 
 ---
 
-**Status: Production Ready** 
