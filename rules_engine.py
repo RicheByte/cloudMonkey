@@ -266,8 +266,9 @@ class RulesEngine:
         }
         
         for finding in findings:
-            compliance_data = finding.get('compliance', {})
-            if framework.lower() in compliance_data:
+            compliance_data = finding.get('compliance')
+            # Check if compliance_data exists and is not None
+            if compliance_data and isinstance(compliance_data, dict) and framework.lower() in compliance_data:
                 controls = compliance_data[framework.lower()]
                 for control in controls:
                     report['controls_affected'].add(control)
