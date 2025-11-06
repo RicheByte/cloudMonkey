@@ -102,6 +102,8 @@ python cloud-pro.py --compare example.com
 python cloud-pro.py --history example.com
 ```
 
+![History](/assets/history.png)
+
 ### Generate Compliance Report
 ```bash
 python cloud-pro.py example.com --compliance iso27001
@@ -252,7 +254,7 @@ Affected Controls:
   - A.13.1.3 (Network Security): 2 findings
   - A.10.1.1 (Cryptographic Controls): 3 findings
 ```
-
+![Reports](/assets/report.png)
 ---
 
 ##  Docker Usage
