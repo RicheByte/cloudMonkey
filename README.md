@@ -1,16 +1,16 @@
 #  cloudMonkey
 
-#  Cloud Security Scanner - Enterprise Edition v7.0
+#  Cloud Security Scanner - Enterprise Edition v8.0
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
 
 **Next-generation cloud security misconfiguration scanner with enterprise features.**
-
+![Demo Video](/assets/video.gif)
 ---
 
-##  What's New in v7.0
+##  What's New in v8.0
 
 ### Major Features Added:
 -  **Persistent Storage** - SQLite database for scan history & trend analysis
@@ -128,14 +128,14 @@ docker run -v $(pwd)/data:/data -v $(pwd)/reports:/reports \
 ```
 cloudMonkey/
 ├── cloud-pro.py              # Main scanner (enhanced v7.0)
-├── db_manager.py             # ✨ NEW: Database persistence
-├── rules_engine.py           # ✨ NEW: YAML rules engine
+├── db_manager.py             #  NEW: Database persistence
+├── rules_engine.py           #  NEW: YAML rules engine
 ├── requirements.txt          # Dependencies
-├── setup.py                  # ✨ NEW: Interactive setup
-├── Dockerfile                # ✨ NEW: Container build
-├── docker-compose.yml        # ✨ NEW: Compose configuration
+├── setup.py                  #  NEW: Interactive setup
+├── Dockerfile                #  NEW: Container build
+├── docker-compose.yml        #  NEW: Compose configuration
 │
-├── rules/                    # ✨ NEW: Detection signatures
+├── rules/                    #  NEW: Detection signatures
 │   ├── aws_s3_public.yaml
 │   ├── gcp_storage_public.yaml
 │   ├── azure_blob_public.yaml
@@ -151,9 +151,9 @@ cloudMonkey/
 ├── reports/                  # Output reports (auto-created)
 │
 └── doc/                      # Documentation
-    ├── ENHANCEMENTS.md       # ✨ NEW: Feature documentation
-    ├── QUICKSTART.md         # ✨ NEW: Quick start guide
-    ├── IMPLEMENTATION_SUMMARY.md  # ✨ NEW: Technical details
+    ├── ENHANCEMENTS.md       #  NEW: Feature documentation
+    ├── QUICKSTART.md         #  NEW: Quick start guide
+    ├── IMPLEMENTATION_SUMMARY.md  #  NEW: Technical details
     └── PERFORMANCE_IMPROVEMENTS.md
 ```
 
@@ -193,6 +193,9 @@ compliance:
 python cloud-pro.py --generate-config
 
 # Edit api_config_template.json
+
+![Demo Video](/assets/apis.png)
+
 # Add your API keys (optional)
 
 # Use config
@@ -294,22 +297,22 @@ stage('Security Scan') {
 
 ---
 
-## 📈 Performance
+##  Performance
 
 ### Optimizations:
-- ✅ Connection pooling with TCP reuse
-- ✅ DNS caching (5-min TTL)
-- ✅ SSL certificate caching
-- ✅ Parallel cloud storage checks
-- ✅ Concurrent API intelligence gathering
-- ✅ Session reuse across all HTTP checks
-- ✅ Database connection pooling
+-  Connection pooling with TCP reuse
+-  DNS caching (5-min TTL)
+-  SSL certificate caching
+-  Parallel cloud storage checks
+-  Concurrent API intelligence gathering
+-  Session reuse across all HTTP checks
+-  Database connection pooling
 
 **Result:** 5-10x faster than previous versions!
 
 
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions welcome! Especially:
 - New YAML detection rules
@@ -321,13 +324,13 @@ Contributions welcome! Especially:
 
 ---
 
-## 📝 License
+##  License
 
 MIT License - See [LICENSE](LICENSE) for details
 
 ---
 
-## 👤 Author
+##  Author
 
 **RicheByte**
 - GitHub: [@RicheByte](https://github.com/RicheByte)
@@ -336,16 +339,16 @@ MIT License - See [LICENSE](LICENSE) for details
 
 ---
 
-## ⚠️ Disclaimer
+##  Disclaimer
 
 **For authorized security testing only.** Always obtain proper authorization before scanning systems you don't own.
 
 ---
 
-## 🌟 Star This Project
+##  Star This Project
 
-If you find this tool useful, please give it a star ⭐ on GitHub!
+If you find this tool useful, please give it a star  on GitHub!
 
 ---
 
-**Status: Production Ready** 🚀
+**Status: Production Ready** 
